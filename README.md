@@ -33,10 +33,10 @@ jobs:
         runs-on: 'ubuntu-latest'
         steps:
             - name: Code Review
-              uses: packocz/sfdx-code-review-action@main
+              uses: packocz/sfdx-code-review-action@v0.0.1
               with:
                   source_path: 'invest-app/**/*'
-                  reject_threshold: 3
+                  reject_threshold: 1
                   category: '!Documentation'
                   github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
