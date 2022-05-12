@@ -35,21 +35,17 @@ runs:
       run: |
           git fetch origin ${{ github.base_ref }}
           git fetch origin ${{ github.head_ref }}
-    
-    - name: 'Get GitDiff from GitHub PR API'
-      uses: octokit/request-action@v2.x
+
+    - name: Get GitDiff from GitHub PR API
       id: fetch_diff
-      with:
-          route: GET https://patch-diff.githubusercontent.com/raw/${{ github.repository }}/pull/${{ github.event.number }}.diff 
-      env:
-          GITHUB_TOKEN: ${{ inputs.github_token }}
-    
-    - name: 'Write diff to file'
-      uses: DamianReeves/write-file-action@v1.0
-      with:
-          path: diff.txt
-          contents: "${{ steps.fetch_diff.outputs.data }}"
-          write-mode: overwrite
+      shell: bash
+      run: |
+        curl --request GET \
+        --header 'authorization: Bearer ${{ inputs.github_token }}' \
+        --header 'content-type: application/json' \
+        --header 'Accept: application/vnd.github.v3.diff' \
+        --url https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }} \
+        > diff.txt
 
     - name: Do git diff to limit SFDX Analyzer
       shell: bash
