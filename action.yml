@@ -81,7 +81,7 @@ runs:
     - name: 'Transform report to review comments'
       shell: bash
       run: |
-          echo "`jq -c 'map({path: (.File | split("${{ github.event.repository.name }}/")[2]), position: .Line, severity: .Severity, body: (.Description + " (" + .Engine + " - " + .Rule + " - " + "Severity: " + .Severity + ")")})' report.json`" > comments.json
+          echo "`jq -c 'map({path: (.File | split("${{ github.event.repository.name }}/")[2]), position: .Line, severity: .["Normalized Severity"], body: (.Description + " (" + .Engine + " - " + .Rule + " - " + "Severity: " + .["Normalized Severity"] + ")")})' report.json`" > comments.json
 
     - name: 'Translate Line to Position, filter issues outside diff and Evaluate Approval'
       shell: bash
