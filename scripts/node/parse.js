@@ -4,8 +4,8 @@ const args = process.argv.slice(2);
 const diffFilePath = args[0];
 const commentsPath = args[1];
 
-const rejectTreshold = args.length > 2 ? args[2] : undefined;
-const approveThreshold = args.length > 3 ? args[3] : undefined;
+const rejectTreshold = args.length > 2 ? args[2] : 0;
+const approveThreshold = args.length > 3 ? args[3] : 99;
 
 const fs = require("fs");
 
@@ -87,8 +87,13 @@ function getPositionOffsetMap(diffData) {
 
 function filterAndTranslatePositionReviewComments(allComments, positionMaps) {
     let relevantComments = [];
-
+    let count = 0;
     allComments.forEach((comment) => {
+        if(count > 39) {
+            console.log('Too many comments');
+            return;
+        }
+        count++;
         console.log(comment);
         let line = parseInt(comment.position);
         let filename = comment.path;
@@ -111,7 +116,7 @@ function filterAndTranslatePositionReviewComments(allComments, positionMaps) {
 comments = filterAndTranslatePositionReviewComments(comments, getPositionOffsetMap(diffData));
 
 let commentCount = 0;
-let mostSevere = 0;
+let mostSevere = 99;
 let needsRework = 0;
 comments.forEach((comment) => {
     let severity = parseInt(comment.severity);
@@ -119,7 +124,7 @@ comments.forEach((comment) => {
     if (severity < mostSevere) {
         mostSevere = severity;
     }
-    if (rejectTreshold && severity <= rejectTreshold) {
+    if (rejectTreshold !== undefined && severity <= rejectTreshold) {
         needsRework++;
     }
     delete comment.severity;
@@ -127,12 +132,12 @@ comments.forEach((comment) => {
 
 let reviewEvent = 'COMMENT';
 let reviewText = 'Salesforce Code Analyzer did not find any rule violations';
-if (approveThreshold && mostSevere > approveThreshold) {
+if (approveThreshold !== undefined && mostSevere > approveThreshold) {
     reviewEvent = 'APPROVE';
     if (commentCount > 0) {
         reviewText = `Maximum severity of the ${commentCount} rule violations identified by the Salesforce Code Analyzer was ${mostSevere}.`;
     }
-} else if (commentCount > 0 && rejectTreshold && mostSevere <= rejectTreshold) {
+} else if (commentCount > 0 && rejectTreshold !== undefined && mostSevere <= rejectTreshold) {
     reviewEvent = 'REQUEST_CHANGES';
     reviewText = `At least ${needsRework} of the ${commentCount} rule violations identified by the Salesforce Code Analyzer require rework. Highest severity found was ${mostSevere}. `;
 } else if (commentCount > 0) {
