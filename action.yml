@@ -25,7 +25,7 @@ runs:
   using: 'composite'
   steps: 
     - name: Clone Repository (Latest)
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.ref }}
@@ -51,14 +51,21 @@ runs:
       shell: bash
       id: getdiff
       run: echo "::set-output name=difflist::$(git diff --name-only --diff-filter=MCRA $(git merge-base --fork-point origin/${{ github.base_ref }} origin/${{ github.head_ref }})..origin/${{ github.head_ref }} ${{ inputs.source_path }} | paste -sd "," -)"
+    
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        cache: 'npm'
 
     - name: Install Salesforce CLI
       shell: bash
       run: |
-          wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
-          mkdir sfdx-cli
-          tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
-          ./sfdx-cli/install
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
+          mkdir ~/sfdx
+          tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
+          echo "$HOME/sfdx/bin" >> $GITHUB_PATH
+          ~/sfdx/bin/sfdx version
 
     - name: 'Install Code Scanner'
       shell: bash
