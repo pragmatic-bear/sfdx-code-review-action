@@ -15,8 +15,12 @@ inputs:
     description: 'If all Issues are less severe than this the review will give approval'
     required: false
   category:
-    description: 'categor(ies) of rules to run'
+    description: 'category(ies) of rules to run'
     required: false
+  max_comments:
+    description: 'Maximum number of feedback comments to post as part of the review. Anything over 39 will be posted separately in 5s intervals.'
+    required: false
+    default: '39'
 branding:
   icon: 'check'
   color: 'blue'
@@ -90,34 +94,9 @@ runs:
       run: |
           echo "`jq -c 'map({path: (.File | split("${{ github.event.repository.name }}/")[2]), position: .Line, severity: .["Normalized Severity"], body: (.Description + " (" + .Engine + " - " + .Rule + " - " + "Severity: " + .["Normalized Severity"] + ")")})' report.json`" > comments.json
 
-    - name: 'Translate Line to Position, filter issues outside diff and Evaluate Approval'
+    - name: 'Create PR Review'
       shell: bash
-      run: |
-          node ${{ github.action_path }}/scripts/node/parse.js diff.txt comments.json ${{ inputs.reject_threshold }} ${{ inputs.approve_threshold }}
-
-    - name: Read Comments File
-      shell: bash
-      id: getcomments
-      run: echo "::set-output name=comments::$(cat comments.json)"
-
-    - name: Read Review Event File
-      shell: bash
-      id: getevent
-      run: echo "::set-output name=event::$(cat reviewEvent.txt)"
-
-    - name: Read Review Body File
-      shell: bash
-      id: getbody
-      run: echo "::set-output name=body::$(cat reviewBody.txt)"
-
-    - name: 'Create Review'
-      uses: octokit/request-action@v2.x
-      with:
-          route: POST /repos/{repo}/pulls/{pull_number}/reviews
-          repo: ${{ github.repository }}
-          pull_number: ${{ github.event.number }}
-          body: '${{ steps.getbody.outputs.body }}'
-          event: '${{ steps.getevent.outputs.event }}'
-          comments: '${{ steps.getcomments.outputs.comments }}'
+      run: node ${{ github.action_path }}/scripts/node/createReview.js diff.txt comments.json ${{ inputs.reject_threshold }} ${{ inputs.approve_threshold }} ${{ inputs.max_comments}}
       env:
           GITHUB_TOKEN: ${{ inputs.github_token }}
+      
