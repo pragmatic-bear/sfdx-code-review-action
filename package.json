@@ -1,0 +1,23 @@
+{
+  "name": "sfdx-code-review-action",
+  "version": "1.0.0",
+  "description": "GitHub Pull Request code review using Salesforce Code Analyzer ## Description Action will checkout the repository and fetch the Head and base branches of the Pull Request. It will then install the Salesforce CLI and Code Analyzer plugin.",
+  "main": "createReview.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/packocz/sfdx-code-review-action.git"
+  },
+  "author": "packocz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/packocz/sfdx-code-review-action/issues"
+  },
+  "homepage": "https://github.com/packocz/sfdx-code-review-action#readme",
+  "dependencies": {
+    "@actions/github": "^5.0.3",
+    "@octokit/action": "^4.0.4"
+  }
+}
