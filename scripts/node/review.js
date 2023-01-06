@@ -1,6 +1,7 @@
 module.exports = {
 	evaluate: function (comments, approveThreshold, rejectThreshold) {
-		let severity = getSeverity(comments, approveThreshold, rejectThreshold);
+        console.log(`evaluating decision, approve threshold: ${approveThreshold}, reject threshold: ${rejectThreshold}`);
+		let severity = getSeverity(comments, rejectThreshold);
 
 		let review = {
 			event: 'COMMENT',
@@ -39,7 +40,7 @@ module.exports = {
 	}
 };
 
-function getSeverity(comments, approveThreshold, rejectThreshold) {
+function getSeverity(comments, rejectThreshold) {
 	let severity = { commentCount: 0, mostSevere: 99, needsRework: 0 };
 	comments.forEach((comment) => {
 		let commentSeverity = parseInt(comment.severity);

@@ -8,7 +8,7 @@ const issuesPath = args[1];
 const rejectTreshold = args.length > 2 ? args[2] : 0;
 const approveThreshold = args.length > 3 ? args[3] : 99;
 
-const absoluteMaxComments = args.length > 4 ? args[4] : undefined;
+const absoluteMaxComments = args.length > 4 ? args[4] : 39;
 
 const fs = require('fs');
 const PR_MAX_SIZE = 39;

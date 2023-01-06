@@ -11,9 +11,11 @@ inputs:
   reject_threshold:
     description: 'Single Issue with this severity will cause the review to request changes'
     required: false
+    default: '0'
   approve_threshold:
     description: 'If all Issues are less severe than this the review will give approval'
     required: false
+    default: '99'
   category:
     description: 'category(ies) of rules to run'
     required: false
@@ -96,7 +98,7 @@ runs:
 
     - name: 'Create PR Review'
       shell: bash
-      run: node ${{ github.action_path }}/scripts/node/createReview.js diff.txt comments.json ${{ inputs.reject_threshold }} ${{ inputs.approve_threshold }} ${{ inputs.max_comments}}
+      run: node ${{ github.action_path }}/scripts/node/createReview.js diff.txt comments.json ${{ inputs.reject_threshold }} ${{ inputs.approve_threshold }} ${{ inputs.max_comments }}
       env:
           GITHUB_TOKEN: ${{ inputs.github_token }}
       
