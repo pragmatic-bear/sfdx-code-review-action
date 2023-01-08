@@ -69,9 +69,9 @@ function filterAndTranslatePositionReviewComments(allComments, positionMaps) {
 	allComments.forEach((comment) => {
 		let line = parseInt(comment.position);
 		let filename = comment.path;
-        console.log(`!! comment line ${line} and fine ${comment.path} and body ${comment.body}`);
+        console.log(`comment line ${line} and fine ${comment.path} and body ${comment.body}`);
 		if (!positionMaps.has(filename)) {
-			console.warn(`${filename} not in git diff`);
+			console.warn(`!! ${filename} not in git diff`);
 			return;
 		}
 		let lineToPosition = positionMaps.get(filename);
