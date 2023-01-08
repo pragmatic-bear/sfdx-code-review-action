@@ -82,5 +82,6 @@ function filterAndTranslatePositionReviewComments(allComments, positionMaps) {
 		comment.position = lineToPosition.get(line);
 		relevantComments.push(comment);
 	});
+    console.log(`total relevant comments ${relevantComments.length}`);
 	return relevantComments;
 }
