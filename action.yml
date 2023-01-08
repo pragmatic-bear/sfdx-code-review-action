@@ -2,11 +2,11 @@ name: 'Pull Request SFDX Code Review'
 description: 'Uses Salesforce Code Analyzer to create a Pull Request Review including inline Comments'
 inputs:
   source_path:
-    description: 'Path to the package folder containing source to be analysed'
+    description: 'Path to the package folder containing source to be analysed. Git Diff will be performend in this folder and only changed files will be considered.'
     required: true
     default: 'force-app/**/*'
   github_token:
-    description: 'Pass in the GITHUB_TOKEN secret to be able to make the Create PR Review API Call'
+    description: 'Pass in the GITHUB_TOKEN to facilitate API calls to GitHub'
     required: true
   reject_threshold:
     description: 'Single Issue with this severity will cause the review to request changes'
@@ -16,13 +16,26 @@ inputs:
     description: 'If all Issues are less severe than this the review will give approval'
     required: false
     default: '99'
-  category:
-    description: 'category(ies) of rules to run'
-    required: false
   max_comments:
     description: 'Maximum number of feedback comments to post as part of the review. Anything over 39 will be posted separately in 5s intervals.'
     required: false
     default: '39'
+  category:
+    description: 'From Analyzer; One or more categories of rules to run. Specify multiple values as a comma-separated list.'
+    required: false
+  engine:
+    description: 'From Analyzer (default: pmd, eslint, cpd); not including Graph Engine. Specifies one or more engines to run. Submit multiple values as a comma-separated list. Specify the location of eslintrc config to customize eslint engine'
+    required: false
+    default: 'pmd,eslint,cpd'
+  eslintconfig:
+    description: 'From Analyzer;  Specifies the location of eslintrc config to customize eslint engine.'
+    required: false
+  pmdconfig:
+    description: 'From Analyzer;  Specifies the location of PMD rule reference XML file to customize rule selection.'
+    required: false
+  tsconfig:
+    description: 'From Analyzer;  Location of tsconfig.json file used by eslint-typescript engine.'
+    required: false
 branding:
   icon: 'check'
   color: 'blue'
@@ -78,14 +91,8 @@ runs:
       run: sfdx plugins:install @salesforce/sfdx-scanner
 
     - name: 'Run Code Scanner'
-      if: ${{ inputs.category == ''}}
       shell: bash
-      run: sfdx scanner:run -t "${{ steps.getdiff.outputs.difflist }}" -f csv --normalize-severity  > report.csv
-    
-    - name: 'Run Code Scanner'
-      if: ${{ inputs.category != ''}}
-      shell: bash
-      run: sfdx scanner:run -t "${{ steps.getdiff.outputs.difflist }}" -c '${{ inputs.category }}' -f csv --normalize-severity  > report.csv
+      run: sfdx scanner:run --target "${{ steps.getdiff.outputs.difflist }}" --category "${{ inputs.category }}" --engine "${{ inputs.engine }}" --eslintconfig "${{ inputs.eslintconfig }}" --pmdconfig "${{ inputs.pmdconfig }}" --tsconfig "${{ inputs.tsconfig }}" --format csv --normalize-severity  > report.csv
 
     - name: 'Convert report to json'
       shell: bash
