@@ -36,6 +36,21 @@ inputs:
   tsconfig:
     description: 'From Analyzer;  Location of tsconfig.json file used by eslint-typescript engine.'
     required: false
+  dfa_setting:
+    description: 'Include Salesforce Graph Engine analysis. Options: "dfa" or "dfa-only". Leave blank to run only standard Analyzer.'
+    required: false
+  projectdir:
+    description: 'From Analyzer, Applies to DFA only; Provides the relative or absolute root project directory used to set the context for Graph Engine analysis. Project directory must be a path, not a glob. Specify multiple values as a comma-separated list. Defaults to ./'
+    required: false
+    default: './'
+  rule_thread_count:
+    description: 'From Analyzer, Applies to DFA only; Specifies number of rule evaluation threads, or how many entrypoints can be evaluated concurrently. Inherits value from SFGE_RULE_THREAD_COUNT env-var, if set. Default is 4.'
+    required: false
+    default: '4'
+  rule_thread_timeout:
+    description: 'From Analyzer, Applies to DFA only; Specifies time limit for evaluating a single entrypoint in milliseconds. Inherits from SFGE_RULE_THREAD_TIMEOUT env-var if set. Default is 900,000 ms, or 15 minutes.'
+    required: false
+    default: '900000'
 branding:
   icon: 'check'
   color: 'blue'
@@ -91,21 +106,52 @@ runs:
       run: sfdx plugins:install @salesforce/sfdx-scanner
 
     - name: 'Run Code Scanner'
+      if: ${{ inputs.dfa_setting != 'dfa-only' }}
       shell: bash
       run: sfdx scanner:run --target "${{ steps.getdiff.outputs.difflist }}" --category "${{ inputs.category }}" --engine "${{ inputs.engine }}" --eslintconfig "${{ inputs.eslintconfig }}" --pmdconfig "${{ inputs.pmdconfig }}" --tsconfig "${{ inputs.tsconfig }}" --format csv --normalize-severity  > report.csv
+    
+    - name: 'Run Graph Engine'
+      if: ${{ inputs.dfa_setting != '' }}
+      shell: bash
+      run: sfdx scanner:run:dfa --target "${{ steps.getdiff.outputs.difflist }}" --projectdir "${{ inputs.projectdir }}" --rule-thread-count "${{ inputs.rule_thread_count }}" --rule-thread-timeout "${{ inputs.rule_thread_timeout }}" --format csv --normalize-severity  > dfa-report.csv
 
     - name: 'Convert report to json'
+      if: ${{ inputs.dfa_setting != 'dfa-only' }}
       shell: bash
       run: cat report.csv | python -c 'import csv, json, sys; print(json.dumps([dict(r) for r in csv.DictReader(sys.stdin)]))' > report.json
+    
+    - name: 'Convert Grapgh Engine report to json'
+      if: ${{ inputs.dfa_setting != '' }}
+      shell: bash
+      run: cat dfa-report.csv | python -c 'import csv, json, sys; print(json.dumps([dict(r) for r in csv.DictReader(sys.stdin)]))' > dfa-report.json
 
     - name: 'Transform report to review comments'
+      if: ${{ inputs.dfa_setting != 'dfa-only' }}
       shell: bash
       run: |
           echo "`jq -c 'map({path: (.File | split("${{ github.event.repository.name }}/")[2]), position: .Line, severity: .["Normalized Severity"], body: (.Description + " (" + .Engine + " - " + .Rule + " - " + "Severity: " + .["Normalized Severity"] + ")")})' report.json`" > comments.json
+    
+    - name: 'Transform Graph Engine report to review comments'
+      if: ${{ inputs.dfa_setting != '' }}
+      shell: bash
+      run: |
+          echo "`jq -c 'map({path: (."Source File" | split("${{ github.event.repository.name }}/")[2]), position: ."Source Line", severity: .["Normalized Severity"], body: ("Source Type: " + ."Source Type" + ", Source Method: " + ."Source Method" + ", Sink File: " + (."Sink File" | split("${{ github.event.repository.name }}/")[2]) + ": " + ."Sink Line" + " ### " + .Description + " (" + .Engine + " - " + .Rule + " - " + "Severity: " + ."Normalized Severity" + ")")})' dfa-report.json`" > dfa-comments.json
+
+    - name: 'Empty Comments Array'
+      if: ${{ inputs.dfa_setting == 'dfa-only' }}
+      shell: bash
+      run: |
+          echo "[]" > comments.json
+    
+    - name: 'Empty Graph Engine Comments Array'
+      if: ${{ inputs.dfa_setting == '' }}
+      shell: bash
+      run: |
+          echo "[]" > dfa-comments.json
 
     - name: 'Create PR Review'
       shell: bash
-      run: node ${{ github.action_path }}/scripts/node/createReview.js diff.txt comments.json ${{ inputs.reject_threshold }} ${{ inputs.approve_threshold }} ${{ inputs.max_comments }}
+      run: node ${{ github.action_path }}/scripts/node/createReview.js ${{ inputs.reject_threshold }} ${{ inputs.approve_threshold }} ${{ inputs.max_comments }}
       env:
           GITHUB_TOKEN: ${{ inputs.github_token }}
       
