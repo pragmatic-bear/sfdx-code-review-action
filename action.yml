@@ -4,7 +4,7 @@ inputs:
   source_path:
     description: 'Path to the package folder containing source to be analysed. Git Diff will be performend in this folder and only changed files will be considered.'
     required: true
-    default: 'force-app/**/*'
+    default: '"***.cls" "***.trigger" "***.js" "***.html" "***.page" "***.cmp" "***.component" "***.apex" "***.ts"'
   github_token:
     description: 'Pass in the GITHUB_TOKEN to facilitate API calls to GitHub'
     required: true
