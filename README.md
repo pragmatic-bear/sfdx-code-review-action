@@ -30,7 +30,7 @@ Add the action to your workflow for Pull Requests. Tested running on 'ubuntu-lat
 | Parameter         | Required     | Notes |
 |--------------|-----------|------------|
 | github_token | yes      | Pass in the GITHUB_TOKEN secret to be able to make the Create PR Review API Call        |
-| source_path      | no  | Path to the package folder containing source to be analysed. Git Diff will be performend in this folder and only changed files will be considered. Defaults to ```force-app```      |
+| source_path      | no  | Path to the package folder containing source to be analysed. Git Diff will be performend in this folder and only changed files will be considered. Can include a series of filters in quotes to match file extensions. Defaults to ```'"***.cls" "***.trigger" "***.js" "***.html" "***.page" "***.cmp" "***.component" "***.apex" "***.ts"'```      |
 | reject_threshold  | no | Single Issue with this severity will cause the review to request changes. |
 | approve_threshold | no | If all Issues are less severe than this the review will give approval - categor(ies) of rules to run |
 | category          | no | From Analyzer; One or more categories of rules to run. Specify multiple values as a comma-separated list.  |
@@ -63,7 +63,7 @@ jobs:
             - name: Code Review
               uses: packocz/sfdx-code-review-action@v0.3.0
               with:
-                  source_path: 'invest-app/**/*'
+                  source_path: ''"***.cls" "***.trigger" "***.js" "***.html" "***.page" "***.cmp" "***.component"'
                   reject_threshold: 1
                   max_comments: 20
                   category: '!Documentation'
