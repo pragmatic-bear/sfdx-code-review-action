@@ -16,6 +16,10 @@ inputs:
     description: 'If all Issues are less severe than this the review will give approval'
     required: false
     default: '99'
+  severity_threshold:
+    description: 'Any issue less severe than this configuration will be completely ignored'
+    required: false
+    default: '3'
   max_comments:
     description: 'Maximum number of feedback comments to post as part of the review. Anything over 39 will be posted separately in 5s intervals.'
     required: false
@@ -151,7 +155,11 @@ runs:
 
     - name: 'Create PR Review'
       shell: bash
-      run: node ${{ github.action_path }}/scripts/node/createReview.js ${{ inputs.reject_threshold }} ${{ inputs.approve_threshold }} ${{ inputs.max_comments }}
+      run: node ${{ github.action_path }}/scripts/node/createReview.js
       env:
           GITHUB_TOKEN: ${{ inputs.github_token }}
+          SEVERITY_THRESHOLD: ${{ inputs.severity_threshold }}
+          REJECT_THRESHOLD: ${{ inputs.reject_threshold }}
+          APPROVE_THRESHOLD: ${{ inputs.approve_threshold }} 
+          MAX_COMMENTS: ${{ inputs.max_comments }}
       

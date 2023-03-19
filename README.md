@@ -22,8 +22,9 @@ It is however possible to provide specific values for most of the other importan
 
 If reject threshold is specified review may request changes based on the results. If approval threshold is specific review may give approval if no issues are found or they are of lower importance. If no thresholds are specified the review will always be "COMMENT". 
 
-It is possible to configure the maximum number of comments to be added. The most severe issues are added first. All found issues are considered for the final results evaluation (approve vs request changes) even if they would not be added as comments.
+It is possible to configure the maximum number of comments to be added. The most severe issues are added first. All found issues are considered for the final results evaluation (approve vs request changes) even if they would not be added as comments. 
 
+It is possible to configure to severity threshold to consider issues only as severe or worse. In this case issues less severe than the threshold are completely ignored, even from the total count of issues.
 ## Usage
 Add the action to your workflow for Pull Requests. Tested running on 'ubuntu-latest' image (needs bash, jq, python and node).
 ### Parameters
@@ -33,6 +34,7 @@ Add the action to your workflow for Pull Requests. Tested running on 'ubuntu-lat
 | source_path      | no  | Path to the package folder containing source to be analysed. Git Diff will be performend in this folder and only changed files will be considered. Can include a series of filters in quotes to match file extensions. Defaults to ```'"***.cls" "***.trigger" "***.js" "***.html" "***.page" "***.cmp" "***.component" "***.apex" "***.ts"'```      |
 | reject_threshold  | no | Single Issue with this severity will cause the review to request changes. |
 | approve_threshold | no | If all Issues are less severe than this the review will give approval - categor(ies) of rules to run |
+| severity_threshold  | no | Any issues less severe (higher number) than this are ignored. Defaults to ```3```.|
 | category          | no | From Analyzer; One or more categories of rules to run. Specify multiple values as a comma-separated list.  |
 | max_comments          | no | Chooses the maximum number of inline review comments added at one time. Defaults to ```39```. |
 | engine          | no | From Analyzer; Specifies one or more engines to run. Submit multiple values as a comma-separated list. Specify the location of eslintrc config to customize eslint engine. Defaults to ```'pmd, eslint, cpd'```  |

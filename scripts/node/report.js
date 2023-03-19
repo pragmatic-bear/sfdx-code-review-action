@@ -1,6 +1,6 @@
 module.exports = {
-	parse: function (diff, comments) {
-		return filterAndTranslatePositionReviewComments(comments, getPositionOffsetMap(diff));
+	parse: function (diff, comments, requiredSeverity) {
+		return filterAndTranslatePositionReviewComments(comments, getPositionOffsetMap(diff), requiredSeverity);
 	}
 };
 
@@ -64,13 +64,18 @@ function getPositionOffsetMap(diffData) {
 	return lineToPositionMaps;
 }
 
-function filterAndTranslatePositionReviewComments(allComments, positionMaps) {
+function filterAndTranslatePositionReviewComments(allComments, positionMaps, requiredSeverity) {
 	let relevantComments = [];
 	allComments.forEach((comment) => {
 		let line = parseInt(comment.position);
 		let filename = comment.path;
-        console.log(`comment line ${line} and fine ${comment.path} and body ${comment.body}`);
-		if (!positionMaps.has(filename)) {
+        let severity = parseInt(comment.severity);
+        console.log(`comment of severity ${severity} at line ${line} and file ${comment.path} and body ${comment.body}`);
+		if (severity > requiredSeverity) {
+            console.warn(`!! Severity: ${severity} is too low`);
+            return;
+        }
+        if (!positionMaps.has(filename)) {
 			console.warn(`!! ${filename} not in git diff`);
 			return;
 		}

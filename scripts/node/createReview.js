@@ -1,18 +1,17 @@
 #!/usr/bin/node
 
-const args = process.argv.slice(2);
-
 const diffFilePath = 'diff.txt';
 const issuesPath = 'comments.json';
 const dfaIssuesPath = 'dfa-comments.json';
 
-const rejectTreshold = args.length > 0 ? args[0] : 0;
-const approveThreshold = args.length > 1 ? args[1] : 99;
-
-const absoluteMaxComments = args.length > 2 ? args[2] : 39;
+const rejectTreshold = parseInt(process.env.REJECT_THRESHOLD);
+const approveThreshold = parseInt(process.env.APPROVE_THRESHOLD);
+const absoluteMaxComments = parseInt(process.env.MAX_COMMENTS);
+const minSeverityToConsider = parseInt(process.env.SEVERITY_THRESHOLD);
 
 const fs = require('fs');
 const PR_MAX_SIZE = 29;
+
 
 main();
 
@@ -45,7 +44,7 @@ async function main() {
 	}
 
 	const report = require('./report.js');
-	issues = report.parse(diffData, issues);
+	issues = report.parse(diffData, issues, minSeverityToConsider);
 	const comments = require('./comments.js');
 
 	const githubAction = require('@actions/github');
