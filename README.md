@@ -10,7 +10,7 @@ GitHub Pull Request code review using [Salesforce Code Analyzer](https://forcedo
 ## Description
 Action will checkout the repository and fetch the Head and base branches of the Pull Request. It will then install the Salesforce CLI and Code Analyzer plugin.
 
-The Run of the analyser is limited to the changed files. The produced issue report is compared to the GitHub Pull Request diff and issues relevant to visible changes in the PR are included as inline comments in the Pull Request review
+The Run of the analyser is limited to the changed files. The produced issue report is compared to the GitHub Pull Request diff and issues relevant to visible changes in the PR are included as inline comments in the Pull Request review.
 
 Maximum of 39 comments are added as part of the review itself (due to time limits on API request). Any additional comments will be added separately outside of the review if the ```max_comments``` setting is set to a higher value (in 5s intervals to protect from API Rate Limits). 
 
@@ -22,6 +22,8 @@ It is however possible to provide specific values for most of the other importan
 
 If reject threshold is specified review may request changes based on the results. If approval threshold is specific review may give approval if no issues are found or they are of lower importance. If no thresholds are specified the review will always be "COMMENT". 
 
+Reqest Changes reviews could prevent you from merging if you want to ignore the results. Check you GitHub settings to make sure you won't be blocked when you least need it. There is also an option to fail the pipeline instead of Requesting Changes via the review.
+
 It is possible to configure the maximum number of comments to be added. The most severe issues are added first. All found issues are considered for the final results evaluation (approve vs request changes) even if they would not be added as comments. 
 
 It is possible to configure to severity threshold to consider issues only as severe or worse. In this case issues less severe than the threshold are completely ignored, even from the total count of issues.
@@ -32,6 +34,7 @@ Add the action to your workflow for Pull Requests. Tested running on 'ubuntu-lat
 |--------------|-----------|------------|
 | github_token | yes      | Pass in the GITHUB_TOKEN secret to be able to make the Create PR Review API Call        |
 | source_path      | no  | Path to the package folder containing source to be analysed. Git Diff will be performend in this folder and only changed files will be considered. Can include a series of filters in quotes to match file extensions. Defaults to ```'"***.cls" "***.trigger" "***.js" "***.html" "***.page" "***.cmp" "***.component" "***.apex" "***.ts"'```      |
+| fail_threshold  | no | Single Issue with this severity will cause the pipeline job to fail. |
 | reject_threshold  | no | Single Issue with this severity will cause the review to request changes. |
 | approve_threshold | no | If all Issues are less severe than this the review will give approval - categor(ies) of rules to run |
 | severity_threshold  | no | Any issues less severe (higher number) than this are ignored. Defaults to ```3```.|
