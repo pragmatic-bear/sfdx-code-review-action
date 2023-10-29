@@ -8,6 +8,10 @@ inputs:
   github_token:
     description: 'Pass in the GITHUB_TOKEN to facilitate API calls to GitHub'
     required: true
+  fail_threshold:
+    description: 'Single Issue with this severity will cause the pipeline to fail (can be used instad of request changes)'
+    required: false
+    default: '0'
   reject_threshold:
     description: 'Single Issue with this severity will cause the review to request changes'
     required: false
@@ -158,6 +162,7 @@ runs:
       run: node ${{ github.action_path }}/scripts/node/createReview.js
       env:
           GITHUB_TOKEN: ${{ inputs.github_token }}
+          FAIL_THRESHOLD: ${{ inputs.fail_threshold }}
           SEVERITY_THRESHOLD: ${{ inputs.severity_threshold }}
           REJECT_THRESHOLD: ${{ inputs.reject_threshold }}
           APPROVE_THRESHOLD: ${{ inputs.approve_threshold }} 

@@ -1,6 +1,6 @@
 module.exports = {
 	sort: function (comments, maxComments) {
-        console.log(`sorting ${comments.length} and keeping max ${maxComments}`);
+		console.log(`sorting ${comments.length} and keeping max ${maxComments}`);
 		comments.sort(function (a, b) {
 			return a.severity < b.severity;
 		});
@@ -23,7 +23,7 @@ module.exports = {
 		}
 		return parsedComments;
 	},
-	filter: function (comments, existingComments) {
+	filterOutExisting: function (comments, existingComments) {
 		let newComments = [];
 		comments.forEach((element) => {
 			const commentKey = getKey(element);
@@ -34,6 +34,15 @@ module.exports = {
 				console.log('..no');
 				newComments.push(element);
 			}
+		});
+		return newComments;
+	},
+	deleteSeverity: function (comments) {
+		let newComments = [];
+		comments.forEach((element) => {
+			const copy = { ...element };
+			delete copy.severity;
+			newComments.push(copy);
 		});
 		return newComments;
 	}

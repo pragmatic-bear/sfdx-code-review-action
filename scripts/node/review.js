@@ -1,7 +1,9 @@
 module.exports = {
 	evaluate: function (comments, approveThreshold, rejectThreshold) {
-        console.log(`evaluating decision, approve threshold: ${approveThreshold}, reject threshold: ${rejectThreshold}`);
-		let severity = getSeverity(comments, rejectThreshold);
+		console.log(
+			`evaluating decision, approve threshold: ${approveThreshold}, reject threshold: ${rejectThreshold}`
+		);
+		let severity = this.getSeverity(comments, rejectThreshold);
 
 		let review = {
 			event: 'COMMENT',
@@ -37,22 +39,20 @@ module.exports = {
 			}
 		}
 		return relevantReviews;
+	},
+	getSeverity: function (comments, rejectThreshold) {
+		let severity = { commentCount: 0, mostSevere: 99, needsRework: 0 };
+		comments.forEach((comment) => {
+			let commentSeverity = parseInt(comment.severity);
+			severity.commentCount++;
+			if (commentSeverity < severity.mostSevere) {
+				severity.mostSevere = commentSeverity;
+			}
+			if (rejectThreshold !== undefined && commentSeverity <= rejectThreshold) {
+				severity.needsRework++;
+			}
+		});
+		console.log(`Issues severity ${JSON.stringify(severity)}`);
+		return severity;
 	}
 };
-
-function getSeverity(comments, rejectThreshold) {
-	let severity = { commentCount: 0, mostSevere: 99, needsRework: 0 };
-	comments.forEach((comment) => {
-		let commentSeverity = parseInt(comment.severity);
-		severity.commentCount++;
-		if (commentSeverity < severity.mostSevere) {
-			severity.mostSevere = commentSeverity;
-		}
-		if (rejectThreshold !== undefined && commentSeverity <= rejectThreshold) {
-			severity.needsRework++;
-		}
-		delete comment.severity;
-	});
-    console.log(`Issues severity ${JSON.stringify(severity)}`);
-	return severity;
-}
