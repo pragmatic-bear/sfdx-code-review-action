@@ -94,6 +94,7 @@ runs:
       id: getdiff
       run: |
           DIFFLIST=$(git diff --name-only --diff-filter=MCRA $(git merge-base --fork-point origin/${{ github.base_ref }} origin/${{ github.head_ref }})..origin/${{ github.head_ref }} ${{ inputs.source_path }} | paste -sd "," -)
+          echo "$DIFFLIST"
           echo "difflist=$DIFFLIST" >> "$GITHUB_OUTPUT"
     
     - name: Setup Node
