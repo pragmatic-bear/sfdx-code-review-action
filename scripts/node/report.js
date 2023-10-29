@@ -69,13 +69,15 @@ function filterAndTranslatePositionReviewComments(allComments, positionMaps, req
 	allComments.forEach((comment) => {
 		let line = parseInt(comment.position);
 		let filename = comment.path;
-        let severity = parseInt(comment.severity);
-        console.log(`comment of severity ${severity} at line ${line} and file ${comment.path} and body ${comment.body}`);
+		let severity = parseInt(comment.severity);
+		console.log(
+			`comment of severity ${severity} at line ${line} and file ${comment.path} and body ${comment.body}`
+		);
 		if (severity > requiredSeverity) {
-            console.warn(`!! Severity: ${severity} is too low`);
-            return;
-        }
-        if (!positionMaps.has(filename)) {
+			console.warn(`!! Severity: ${severity} is too low`);
+			return;
+		}
+		if (!positionMaps.has(filename)) {
 			console.warn(`!! ${filename} not in git diff`);
 			return;
 		}
@@ -87,6 +89,6 @@ function filterAndTranslatePositionReviewComments(allComments, positionMaps, req
 		comment.position = lineToPosition.get(line);
 		relevantComments.push(comment);
 	});
-    console.log(`total relevant comments ${relevantComments.length}`);
+	console.log(`total relevant comments ${relevantComments.length}`);
 	return relevantComments;
 }
