@@ -92,7 +92,10 @@ runs:
     - name: Do git diff to limit SFDX Analyzer
       shell: bash
       id: getdiff
-      run: echo "::set-output name=difflist::$(git diff --name-only --diff-filter=MCRA $(git merge-base --fork-point origin/${{ github.base_ref }} origin/${{ github.head_ref }})..origin/${{ github.head_ref }} ${{ inputs.source_path }} | paste -sd "," -)"
+      run: |
+          DIFFLIST=$(git diff --name-only --diff-filter=MCRA $(git merge-base --fork-point origin/${{ github.base_ref }} origin/${{ github.head_ref }})..origin/${{ github.head_ref }} ${{ inputs.source_path }} | paste -sd "," -)
+          echo "$DIFFLIST"
+          echo "difflist=$DIFFLIST" >> "$GITHUB_OUTPUT"
     
     - name: Setup Node
       uses: actions/setup-node@v3
@@ -116,12 +119,16 @@ runs:
     - name: 'Run Code Scanner'
       if: ${{ inputs.dfa_setting != 'dfa-only' }}
       shell: bash
-      run: sfdx scanner:run --target "${{ steps.getdiff.outputs.difflist }}" --category "${{ inputs.category }}" --engine "${{ inputs.engine }}" --eslintconfig "${{ inputs.eslintconfig }}" --pmdconfig "${{ inputs.pmdconfig }}" --tsconfig "${{ inputs.tsconfig }}" --format csv --normalize-severity  > report.csv
+      env:
+          DIFF_LIST: ${{ steps.getdiff.outputs.difflist }}
+      run: sfdx scanner:run --target "$DIFF_LIST" --category "${{ inputs.category }}" --engine "${{ inputs.engine }}" --eslintconfig "${{ inputs.eslintconfig }}" --pmdconfig "${{ inputs.pmdconfig }}" --tsconfig "${{ inputs.tsconfig }}" --format csv --normalize-severity  > report.csv
     
     - name: 'Run Graph Engine'
       if: ${{ inputs.dfa_setting != '' }}
       shell: bash
-      run: sfdx scanner:run:dfa --target "${{ steps.getdiff.outputs.difflist }}" --projectdir "${{ inputs.projectdir }}" --rule-thread-count "${{ inputs.rule_thread_count }}" --rule-thread-timeout "${{ inputs.rule_thread_timeout }}" --format csv --normalize-severity  > dfa-report.csv
+      env:
+          DIFF_LIST: ${{ steps.getdiff.outputs.difflist }}
+      run: sfdx scanner:run:dfa --target "$DIFF_LIST" --projectdir "${{ inputs.projectdir }}" --rule-thread-count "${{ inputs.rule_thread_count }}" --rule-thread-timeout "${{ inputs.rule_thread_timeout }}" --format csv --normalize-severity  > dfa-report.csv
 
     - name: 'Convert report to json'
       if: ${{ inputs.dfa_setting != 'dfa-only' }}
