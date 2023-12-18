@@ -28,13 +28,13 @@ async function main() {
 	}
 
 	const report = require('./report.js');
-	const issuesOnPrDiff = report.parse(diffData, allIssues, minSeverityToConsider);
+	const issuesOnPrDiff = comments.deleteSeverity(report.parse(diffData, allIssues, minSeverityToConsider));
 	const comments = require('./comments.js');
 
 	const githubAction = require('@actions/github');
 	const pullRequest = githubAction.context.payload.pull_request;
 	const review = require('./review.js');
-	const prReview = review.evaluate(comments.deleteSeverity(issuesOnPrDiff), approveThreshold, rejectThreshold);
+	const prReview = review.evaluate(issuesOnPrDiff, approveThreshold, rejectThreshold);
 
 	prReview.repo = pullRequest.base.repo.name;
 	prReview.owner = pullRequest.base.repo.owner.login;
