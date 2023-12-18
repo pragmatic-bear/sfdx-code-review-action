@@ -34,8 +34,9 @@ async function main() {
 	const githubAction = require('@actions/github');
 	const pullRequest = githubAction.context.payload.pull_request;
 	const review = require('./review.js');
-	const prReview = review.evaluate(comments.deleteSeverity(issuesOnPrDiff), approveThreshold, rejectThreshold);
+	const prReview = review.evaluate(issuesOnPrDiff, approveThreshold, rejectThreshold);
 
+    
 	prReview.repo = pullRequest.base.repo.name;
 	prReview.owner = pullRequest.base.repo.owner.login;
 	prReview.pullNumber = pullRequest.number;
@@ -53,7 +54,8 @@ async function main() {
 			allExistingComments = new Map([...existingComments, ...allExistingComments]);
 		}
 	}
-	let newIssues = comments.filterOutExisting(issuesOnPrDiff, allExistingComments);
+    const issuesOnPrWithoutUnsupportedAttributes = comments.deleteSeverity(issuesOnPrDiff);
+	let newIssues = comments.filterOutExisting(issuesOnPrWithoutUnsupportedAttributes, allExistingComments);
 	console.log(
 		`current issues: ${allIssues.length}, already posted: ${allExistingComments.size}, new ${newIssues.length}`
 	);
@@ -84,7 +86,7 @@ async function main() {
 	//fail pipeline if necessary
 	console.log(`Fail threshold set at: ${failThreshold}`);
 	if (failThreshold > 0) {
-		const severity = review.getSeverity(issuesOnPrDiff, failThreshold);
+		const severity = review.getSeverity(issuesOnPrWithoutUnsupportedAttributes, failThreshold);
 		console.log(`Highest severity: ${severity.mostSevere}`);
 		if (severity.mostSevere <= failThreshold) {
 			const core = require('@actions/core');
