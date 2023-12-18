@@ -28,8 +28,8 @@ async function main() {
 	}
 
 	const report = require('./report.js');
-	const issuesOnPrDiff = comments.deleteSeverity(report.parse(diffData, allIssues, minSeverityToConsider));
 	const comments = require('./comments.js');
+	const issuesOnPrDiff = comments.deleteSeverity(report.parse(diffData, allIssues, minSeverityToConsider));
 
 	const githubAction = require('@actions/github');
 	const pullRequest = githubAction.context.payload.pull_request;
